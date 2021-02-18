@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "AnalogRead",
+			"path": "..\\AnalogRead"
+		},
+		{
+			"name": "Totmann",
+			"path": "..\\Totmann"
+		},
+		{
+			"name": "Deep-Sleep-Bug",
+			"path": "..\\Deep-Sleep-Bug"
+		},
+		{
+			"name": "200610-183845-esp32doit-devkit-v1",
+			"path": "..\\200610-183845-esp32doit-devkit-v1"
+		}
+	],
+	"settings": {}
+}

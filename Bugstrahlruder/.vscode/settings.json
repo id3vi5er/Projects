@@ -1,0 +1,5 @@
+{
+    "editor.quickSuggestionsDelay": 2,
+    "editor.suggest.maxVisibleSuggestions": 15,
+    "editor.formatOnPaste": true
+}

@@ -1,0 +1,15 @@
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(INPUT, A0);
+  pinMode(OUTPUT, 9);
+  delay(150);
+  Motor.attach(9); // Motor- PWM and Pin 9 ausgeben
+  Serial.begin(115200);
+}
+
+void loop() {       // put your main code here, to run repeatedly:
+  wert = analogRead(A0);
+  motorspeed = map(wert,0,1023,0,180);
+  Motor.write(motorspeed);   //0-180°
+  Serial.println(motorspeed);
+}
