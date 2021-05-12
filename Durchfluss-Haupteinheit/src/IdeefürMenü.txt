@@ -1,0 +1,46 @@
+byte number_of_items = 10; // Total number of items in the menu
+byte cursor_at_line = 0; // Location (row) of cursor on the display.
+byte cursor_at_item = 0; // Which item the cursor is at.
+
+// Called when the UP-button is pressed
+void move_cursor_up()
+{
+  if (cursor_at_line > 0) // Cursor not at top, just move cursor.
+  {
+    cursor_at_line--;
+    cursor_at_item--;
+    refresh_display(); // Draws the correct items to the LCD
+    return;
+  }
+
+  if (cursor_at_item > 0) // Cursor at top.
+  {
+    cursor_at_item--;
+    refresh_display();
+  }
+}
+
+// Called when the DOWN-button is pressed
+void move_cursor_down()
+{
+  if (cursor_at_line < 2) // Cursor not at bottom, just move cursor.
+  {
+    cursor_at_line++;
+    cursor_at_item++;
+    refresh_display(); // Draws the correct items to the LCD
+    return;
+  }
+
+  if (cursor_at_item < number_of_items - 1) // Cursor at bottom.
+  {
+    cursor_at_item++;
+    refresh_display();
+  }
+}
+
+// Update the display. Use cursor_at_item and cursor_at_line
+// to determine which items to display and where to draw the
+// cursor.
+void refresh_display()
+{
+}

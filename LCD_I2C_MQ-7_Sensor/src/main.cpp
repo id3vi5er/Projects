@@ -8,11 +8,11 @@ LiquidCrystal_I2C lcd(0x27, 20, 2); // set the LCD address to 0x27 for a 16 char
 #define redLED 6
 #define Sensor1 A0
 #define Sensor2 A1
-
+#define baudrate 19200
 
 const float spannungsVariable = 0.00488758553; // = 5/1023
-const int Schwellwert1 = 50;    //Schwellwert für grünen Alarm
-const int Schwellwert2 = 200;   //Schwellwert für roten Alarm
+const int Schwellwert1 = 30;    //Schwellwert für orangenen Alarm
+const int Schwellwert2 = 400;   //Schwellwert für roten Alarm
 const float sensor_reading_clean_air1 = 246;                        //RAW Wert in sauberer Luft Sensor 1
 const float sensor_reading_clean_air2 = 273;                        //RAW Wert in sauberer Luft Sensor 2
 const long interval = 3600000; //Intervall für den Zähler zum zurücksetzen des Max-Wertes
@@ -109,17 +109,6 @@ void clearLCD(int zeile)  //LCD Zeile komplett mit Leerzeichen überschreiben --
   lcd.print("                ");
 }
 
-void showLast5()         //bei 4 gesammelten Werten einmal alle anzeigen
-{
-  clearLCD(0);
-  lcd.setCursor(0, 0);
-  for (byte i = 0; i < 5; i = i + 1) 
-    {
-      lcd.print(letzteWerte1[i]);
-      lcd.print("-");
-    }
-}
-
 void berechnen()          //Berechnungen aller Werte durchführen
 {
   durchschnittsAnalogWert1 = addierterWert1 / 101;      //Durchschnitt Sensor 1 ausrechnen
@@ -145,7 +134,7 @@ void berechnen()          //Berechnungen aller Werte durchführen
 
 void alarmtest()          //Testen ob ein Alarmzustand vorliegt (PPM1 > 100)
 {
-  if (PPM1 >= Schwellwert1)         //Grüne LED anschalten
+  if (PPM1 >= Schwellwert1)         //Orangene LED anschalten
     {
       digitalWrite(greenLED, LOW);
     }
@@ -163,7 +152,7 @@ void alarmtest()          //Testen ob ein Alarmzustand vorliegt (PPM1 > 100)
 void anzeigen()           //Anzeige nach jedem kompletten Zyklus 
 {
   first_run = false;
-  if (PPM1 - PPM2 >= 50 || PPM1 -PPM2 <= -50)
+  if (PPM1 - PPM2 >= 100 || PPM1 -PPM2 <= -100)
     {
       clearLCD(1);
       lcd.setCursor(0, 1);
@@ -179,33 +168,16 @@ void anzeigen()           //Anzeige nach jedem kompletten Zyklus
     else {
       error50 = false;
       clearLCD(0);
+      clearLCD(1);
       lcd.setCursor(0, 0);
-      lcd.print("PPM1 ");
+      lcd.print("CO PPM S1: ");
       lcd.print(PPM1, 0);
-      lcd.print(" PPM2 ");
+      lcd.setCursor(0, 1);
+      lcd.print("CO PPM S2: ");
       lcd.print(PPM2, 0);
-      if(maxPPM1 >= 0)
-      {
-        clearLCD(1);
-        lcd.setCursor(0,1);
-        lcd.print("Max/h: ");
-        lcd.print(maxDurchschnitt);
-      }
-    } 
-
-  if (x == 4) //0-4 = 5er Array
-    {
-      showLast5();
-    }
-  //Aktuelle Zeit speichern und schauen ob das Intervall von 60 Minuten vergangen ist
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) 
-    {
-      previousMillis = currentMillis;
-      maxPPM1 = 0;
-    }
-}
-
+     }
+     }
+    
 void heizen()             //LCD Zeile 2 löschen, neu beschriften und Transitor ON und 1,4V OFF Switchen, 60 Sekunden warten
 {
   if (first_run == true)
@@ -215,7 +187,7 @@ void heizen()             //LCD Zeile 2 löschen, neu beschriften und Transitor 
     lcd.print("Heizzyklus 60s");
   }
   Serial.println("Heizzyklus gestartet, 60 Sekunden warten...");
-  digitalWrite(lowVoltage, LOW);
+  digitalWrite(lowVoltage, HIGH);
   delay(250);
   digitalWrite(transistor, LOW);
   delay(60000);
@@ -240,7 +212,7 @@ void messen()             // Spannung wird auf 1,4V gesenkt, 90 Sekunden lang ge
   addierterWert2 = 0;
   letzterWert2 = PPM2;
 
-  digitalWrite(lowVoltage, HIGH);
+  digitalWrite(lowVoltage, LOW);
   delay(200);
   digitalWrite(transistor, HIGH);
   if(first_run == true)
@@ -329,16 +301,11 @@ void debugging()          //Serial Debugging
     Serial.println(letzteWerte2[i]);
   }
   Serial.println();
-  // Serial.print("MyPPM: ");
-  // Serial.println(myPPM, 2);
-  // Serial.println();
-  
-
 }
 
 void setup()              //Startup - initialize SerialUSB + all OUTPUTS + print first Message on LCD
 {
-  Serial.begin(19200);
+  Serial.begin(baudrate);
   Serial.println("CO Messgeraet - Author: N. Rattensperger");
 
   // Print a message to the LCD for testing it & Information of Users
@@ -358,7 +325,7 @@ void setup()              //Startup - initialize SerialUSB + all OUTPUTS + print
   delay(2000);
 }
 
-void loop()               //Hauptschleife die alle anderen aufruft!
+void loop()               //Hauptschleife die alle anderen aufruft! 
 {
   heizen();
   messen();
