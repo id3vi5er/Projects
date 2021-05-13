@@ -1,7 +1,7 @@
 /*
   Author: N. Rattensperger
   Titel: Waterflowmeter
-  Version: 0.1
+  Version: 0.2
   Beschreibung:
     Arduino Mega mit 2 Durchflusssensoren Typ FCH-m-PP-LC (Art. 155374 Conrad) zur Berechnung des Durchflusses bis 48l/h, min. 0,015l/min
     Anzeige über ein 4x20 Zeichen LCD per I2C
