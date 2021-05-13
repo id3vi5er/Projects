@@ -38,9 +38,9 @@ int rowVal = 0;
 int devval = 0;
 
 //Datapoints storing
-float inputArray[1000];
-int outputArray[1000];
-float flowArray[1000];
+//float inputArray[1000];
+//int outputArray[1000];
+float flowArray[1800];                //Bei 10Sekunden pro Wert ~2,77h bis Overflow
 int ArrayIndex = 0;
 int ArrayView = 0;
 
@@ -78,24 +78,33 @@ void startupAnzeige()
 void calculate(int val1, int val2)
 {
   float lp = 1/10500.00;
-  int pulsesproMinute1 = val1*6.00;
-  float lm1 = pulsesproMinute1*lp;
-  Serial.println(lm1,4);
-  inputArray[ArrayIndex] = lm1;
+  int pulsesproMinuteIn = val1*6.00;    //Achtung, bei ändern der Zählintervalls zu ändern!
+  float lmIn = pulsesproMinuteIn*lp;
+  float lhIn = lmIn*60;                 //Achtung, bei ändern der Zählintervalls zu ändern!
+  Serial.println(lhIn,4);               //Debug
 
-  int pulsesproMinute2 = val2*6.00;
-  float lm2 = pulsesproMinute2*lp;
-  Serial.println(lm2,4);
-  flowArray[ArrayIndex] = inputArray[ArrayIndex]-outputArray[ArrayIndex];
+  int pulsesproMinuteOut = val2*6.00;   //Achtung, bei ändern der Zählintervalls zu ändern!
+  float lmOut = pulsesproMinuteOut*lp;
+  float lhOut = lmOut*60;               //Achtung, bei ändern der Zählintervalls zu ändern!
+  Serial.println(lhOut,4);              //Debug
 
+  flowArray[ArrayIndex] = lhIn-lhOut;
 
-  ArrayIndex++;
-  if (ArrayView == ArrayIndex-1){
-    ArrayView++;
+  if(ArrayIndex < 1799){
+    ArrayIndex++;
+    if (ArrayView == ArrayIndex-1){
+      ArrayView++;
+    }
+    devval = pulses1;
+    pulses1 = 0;
+    pulses2 = 0;
+  } else {
+    ArrayIndex = 0;
+    ArrayView = -1;
+    devval = pulses1;
+    pulses1 = 0;
+    pulses2 = 0;
   }
-  devval = pulses1;
-  pulses1 = 0;
-  pulses2 = 0;
 }
 
 void anzeigen()
@@ -106,7 +115,7 @@ void anzeigen()
     lcd.setCursor(0, i);
     int val = ArrayView-i;
     lcd.print((String)val+": ");
-    lcd.print(inputArray[ArrayView-i]);
+    lcd.print(flowArray[ArrayView-i]);
     lcd.print(" + ");
     lcd.print(devval);
   }
@@ -116,10 +125,8 @@ void anzeigen()
 
 void debug()
 {
-  Serial.print((String)"inputArray["+ArrayIndex+"]: ");
-  Serial.println(inputArray[ArrayIndex]);
-  Serial.print((String)"outputArray["+ArrayIndex+"]: ");
-  Serial.println(outputArray[ArrayIndex]);
+  Serial.print((String)"FlowArray["+ArrayView+"]: ");
+  Serial.println(flowArray[ArrayView]);
   Serial.print("ArrayView: ");
   Serial.println(ArrayView);
   Serial.println();
