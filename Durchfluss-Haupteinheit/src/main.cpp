@@ -20,7 +20,7 @@
 #define inFlowSensor 2
 #define outFlowSensor 3
 
-#define delayTimeMeasurements 10000 //if changed, look for calculate()!
+#define delayTimeMeasurements 10000 //if changed, look for calculate() and change respectively!
 
 volatile int pulses1 = 0;
 volatile int pulses2 = 0;
@@ -38,11 +38,11 @@ int rowVal = 0;
 int devval = 0;
 
 //Datapoints storing
-float inputArray[255];
-int outputArray[255];
-float flowArray[255];
-int pulseArrayIndex = 0;
-int pulseArrayView = 0;
+float inputArray[1000];
+int outputArray[1000];
+float flowArray[1000];
+int ArrayIndex = 0;
+int ArrayView = 0;
 
 
 void buttonPressedUp()
@@ -72,21 +72,26 @@ void startupAnzeige()
     delay(1000);
     lcd.print("Durchflussmessgeraet");
     firstBoot=false;
-    pulseArrayView++;
+    ArrayView++;
 }
 
 void calculate(int val1, int val2)
 {
   float lp = 1/10500.00;
-  int pulsesproMinute = val1*6.00;
-  float lm = pulsesproMinute*lp;
-  Serial.println(lm,4);
-  inputArray[pulseArrayIndex] = lm;
-  outputArray[pulseArrayIndex] = val2;
+  int pulsesproMinute1 = val1*6.00;
+  float lm1 = pulsesproMinute1*lp;
+  Serial.println(lm1,4);
+  inputArray[ArrayIndex] = lm1;
 
-  pulseArrayIndex++;
-  if (pulseArrayView == pulseArrayIndex-1){
-    pulseArrayView++;
+  int pulsesproMinute2 = val2*6.00;
+  float lm2 = pulsesproMinute2*lp;
+  Serial.println(lm2,4);
+  flowArray[ArrayIndex] = inputArray[ArrayIndex]-outputArray[ArrayIndex];
+
+
+  ArrayIndex++;
+  if (ArrayView == ArrayIndex-1){
+    ArrayView++;
   }
   devval = pulses1;
   pulses1 = 0;
@@ -99,9 +104,9 @@ void anzeigen()
   for (int i = 0; i != 4; ++i)
   {
     lcd.setCursor(0, i);
-    int val = pulseArrayView-i;
+    int val = ArrayView-i;
     lcd.print((String)val+": ");
-    lcd.print(inputArray[pulseArrayView-i]);
+    lcd.print(inputArray[ArrayView-i]);
     lcd.print(" + ");
     lcd.print(devval);
   }
@@ -111,12 +116,12 @@ void anzeigen()
 
 void debug()
 {
-  Serial.print((String)"inputArray["+pulseArrayIndex+"]: ");
-  Serial.println(inputArray[pulseArrayIndex]);
-  Serial.print((String)"outputArray["+pulseArrayIndex+"]: ");
-  Serial.println(outputArray[pulseArrayIndex]);
-  Serial.print("pulseArrayView: ");
-  Serial.println(pulseArrayView);
+  Serial.print((String)"inputArray["+ArrayIndex+"]: ");
+  Serial.println(inputArray[ArrayIndex]);
+  Serial.print((String)"outputArray["+ArrayIndex+"]: ");
+  Serial.println(outputArray[ArrayIndex]);
+  Serial.print("ArrayView: ");
+  Serial.println(ArrayView);
   Serial.println();
 }
 
@@ -139,13 +144,13 @@ void loop(){
 if (firstBoot){
   startupAnzeige();
 }
-if(pulseArrayIndex >= 3){
+if(ArrayIndex >= 3){
   if(upButton == true || downButton == true) {
-    if (downButton == true && pulseArrayView < pulseArrayIndex){
-      pulseArrayView++;
+    if (downButton == true && ArrayView < ArrayIndex){
+      ArrayView++;
     }
-    if (upButton == true && pulseArrayView >= 4){
-      pulseArrayView--;
+    if (upButton == true && ArrayView >= 4){
+      ArrayView--;
 
     }
     anzeigen();
