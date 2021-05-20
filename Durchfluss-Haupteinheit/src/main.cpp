@@ -19,7 +19,7 @@
 #define buttonDown 19
 #define inFlowSensor 2
 #define outFlowSensor 3
-#define delayTimeMeasurements 60000 //if changed, look for calculate() and change respectively!
+#define delayTimeMeasurements 250 //if changed, look for calculate() and change respectively! //ACHTUNG; ZURÜCKÄNDERN; WAR 60000!!!
 float imppliter = 10500.00;
 
 volatile int pulses1 = 0;
@@ -31,17 +31,18 @@ volatile boolean downButton = false;
 LiquidCrystal_I2C lcd(0x27,20,4);     // set the LCD address to 0x27 for a 20 chars and 4 line display
 boolean firstBoot = true;
 boolean firstLoop = true;
+
 //Measurement & Calculation
 long lastTime = 0;
 int rowVal = 0;
 int overflows = 0;
+long vl1, vl2;
 
 //Datapoints storing
-float consumptionArray[1800];                //Verbrauchswerte, einmal alle 10s. ~5h bis Overflow
+float consumptionArray[1500];                //Verbrauchswerte, einmal alle 10s. ~30h bis Overflow
 float usedsincestart = 0.00;
-int ArrayIndex = 0;
-int ArrayView = 0;
-
+unsigned int ArrayIndex = 0;
+unsigned int ArrayView = 0;
 
 void buttonPressedUp()          //Interrupt Handler
 {
@@ -89,15 +90,15 @@ void calculate(int val1, int val2)                              //Berechnung der
 
   //Storing Values
   consumptionArray[ArrayIndex] = LiterIntervallIn-LiterIntervallOut;
-
+  
   //Rechnung für Gesamtverbrauch:
   float usedthisIntervall = LiterIntervallIn-LiterIntervallOut;
   usedsincestart = usedsincestart+usedthisIntervall;     //Speichern in Litern!
 
-  long vl1 = overflows*1800;
-  long vl2 = vl1+ArrayIndex;
+  unsigned long vl1 = overflows*1500;
+  unsigned long vl2 = vl1+ArrayIndex;
 
-  if(ArrayIndex < 1799){
+  if(ArrayIndex < 1499){
     ArrayIndex++;
     if (ArrayView == vl2-1){
         ArrayView++;
@@ -107,7 +108,7 @@ void calculate(int val1, int val2)                              //Berechnung der
     } else {
       ArrayIndex = 0;
       ArrayView++;
-      overflows++;
+      overflows = +1;
       pulses1 = 0;
       pulses2 = 0;
     }
@@ -134,16 +135,26 @@ void calculate(int val1, int val2)                              //Berechnung der
 void anzeigen()                                                 //Aktualisierung der LCD-Anzeige, getrigger durch Button oder Timer
 {
   lcd.clear();
+  // Serial.println(ArrayView);
+  // Serial.println(vl1);
+  // unsigned long ViewV = ArrayView-vl1;
+  // Serial.println(ViewV);
   for (int i = 0; i != 4; ++i)
   {
-    int val = ArrayView-i;
+    Serial.println((String)"i="+i);
+    unsigned long val = ArrayView-i;
+    Serial.println((String)"val= "+val);
+    unsigned long ViewV = val-vl1;
+    Serial.println((String)"ViewV= "+ViewV);
+    Serial.println((String)"Overflows="+overflows);
+
     if (i == 0){
       lcd.setCursor(0, i);
       lcd.print((String)"Gesamt in l: "+usedsincestart);
     } else{
       lcd.setCursor(0, i);
       lcd.print((String)val+".Minute: ");
-      lcd.print((String)consumptionArray[ArrayView-i]+"l/m");
+      //lcd.print((String)consumptionArray[ViewV]+"l/m");
     }
   }
   downButton = false;
@@ -152,9 +163,9 @@ void anzeigen()                                                 //Aktualisierung
 
 void debug()                                                    //Nur zu debugzwecken, kann komplett deaktiviert werden!
 {
-  Serial.print((String)"consumptionArray["+ArrayView+"]: ");
-  Serial.println(consumptionArray[ArrayView]);
-  Serial.println((String)"ArrayView: ["+ArrayView+"]");
+  Serial.print((String)"consumptionArray[ArrayIndex"+ArrayIndex+"]: ");
+  Serial.println(consumptionArray[ArrayIndex]);
+  Serial.println((String)"ArrayView: [ArrayView"+ArrayView+"]");
   Serial.println();
 }
 
@@ -177,7 +188,8 @@ void loop(){                                                    //Schleife, daue
 if (firstBoot){                                           //nur beim ersten Boot für die Startup-Anzeige
   startupAnzeige();
 }
-if(ArrayView >= 3 && ArrayView <=1798){                                      //Wenn mehr als 4 Werte vorhanden sind, und kein Overflow stattgefunden hat
+
+if(vl2 >= 3 && vl2 <=1748){                                       //Wenn mehr als 4 Werte vorhanden sind, und kein Overflow stattgefunden hat
   if(upButton == true || downButton == true) {
     if (downButton == true && ArrayView < ArrayIndex ){
       ArrayView++;
@@ -190,14 +202,15 @@ if(ArrayView >= 3 && ArrayView <=1798){                                      //W
     //debug();
   }
 }
-if(ArrayIndex >1798){
+
+if(vl2 >1748){                                                         //Nach Overflow 
   if(upButton == true || downButton == true) {
-    long vl1 = overflows*1800;
-    long vl2 = vl1+ArrayIndex;
+    vl1 = overflows*1800;
+    vl2 = vl1+ArrayIndex;
     if (downButton == true && ArrayView < vl2){
       ArrayView++;
     }
-    if (upButton == true && ArrayView >= vl2){
+    if (upButton == true && ArrayView >= 1799){
       ArrayView--;
 
     }
@@ -214,6 +227,6 @@ if (millis() - lastTime >= delayTimeMeasurements){        //Schleife nach delayT
   lastTime = millis();
   calculate(pulses1, pulses2);
   anzeigen();
-  //debug();
+  debug();
   }
 }
