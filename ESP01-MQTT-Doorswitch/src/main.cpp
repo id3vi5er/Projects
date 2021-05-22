@@ -21,6 +21,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+
 // Update these with values suitable for your network.
 
 const char* ssid = "WLAN";
@@ -131,8 +132,7 @@ void loop() {
     Serial.println(msg);
     client.publish("doorswitch", msg);
     lastMsg = now;
-  } else if (digitalRead(reedswitch) == LOW && now - lastMsg > 4000)
-  {
+  } else if (digitalRead(reedswitch) == LOW && now - lastMsg > 4000){
     snprintf(msg, MSG_BUFFER_SIZE, "0");
     Serial.print("Publish message: ");
     Serial.println(msg);

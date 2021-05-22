@@ -1,7 +1,7 @@
 /*
   Author: N. Rattensperger
   Titel: Waterflowmeter
-  Version: 0.3
+  Version: 0.4
   Beschreibung:
     Arduino Mega mit 2 Durchflusssensoren Typ FCH-m-PP-LC (Art. 155374 Conrad) zur Berechnung des Durchflusses (0,8l-0,015l/min)
     Sensor gibt 10500 Impulse pro Liter aus
@@ -19,7 +19,7 @@
 #define buttonDown 19
 #define inFlowSensor 2
 #define outFlowSensor 3
-#define delayTimeMeasurements 250 //if changed, look for calculate() and change respectively! //ACHTUNG; ZURÜCKÄNDERN; WAR 60000!!!
+#define delayTimeMeasurements 2000 //if changed, look for calculate() and change respectively! //ACHTUNG; ZURÜCKÄNDERN; WAR 60000!!!
 float imppliter = 10500.00;
 
 volatile int pulses1 = 0;
@@ -68,10 +68,9 @@ void startupAnzeige()                                           //Einmalig beim 
     lcd.setCursor(0, 0);
     lcd.print("        N.R.");
     lcd.setCursor(0, 1);
-    delay(1000);
     lcd.print("Durchflussmessgeraet");
     firstBoot=false;
-    ArrayView++;
+
 }
 
 void calculate(int val1, int val2)                              //Berechnung der Messwerte, getriggert durch Timer
@@ -95,8 +94,8 @@ void calculate(int val1, int val2)                              //Berechnung der
   float usedthisIntervall = LiterIntervallIn-LiterIntervallOut;
   usedsincestart = usedsincestart+usedthisIntervall;     //Speichern in Litern!
 
-  unsigned long vl1 = overflows*1500;
-  unsigned long vl2 = vl1+ArrayIndex;
+  vl1 = overflows*1500;
+  vl2 = vl1+ArrayIndex;
 
   if(ArrayIndex < 1499){
     ArrayIndex++;
@@ -108,65 +107,43 @@ void calculate(int val1, int val2)                              //Berechnung der
     } else {
       ArrayIndex = 0;
       ArrayView++;
-      overflows = +1;
+      Serial.println((String)"overflows="+overflows);
+      overflows = overflows+1;
+      Serial.println("Overflow!");
       pulses1 = 0;
       pulses2 = 0;
     }
-
-  // if(ArrayIndex < 1799 && ArrayView <1798){
-  //   ArrayIndex++;
-  //   if (ArrayView == ArrayIndex-1){
-  //     ArrayView++;
-  //   }
-  //   pulses1, pulses2 = 0;
-  //   } else if (ArrayIndex < 1799 && ArrayView >=1798){
-  //   ArrayIndex++;
-  //   ArrayView++;
-  //   pulses1, pulses2 = 0;
-  //   } else if (ArrayIndex == 1799){
-  //   ArrayIndex = 0;
-  //   ArrayView++;
-  //   overflows++;
-  //   pulses1, pulses2 = 0;
-  //   }
 
 }
 
 void anzeigen()                                                 //Aktualisierung der LCD-Anzeige, getrigger durch Button oder Timer
 {
   lcd.clear();
-  // Serial.println(ArrayView);
-  // Serial.println(vl1);
-  // unsigned long ViewV = ArrayView-vl1;
-  // Serial.println(ViewV);
+  Serial.println((String)"ArrayView: "+ArrayView);
+  Serial.println((String)"ArrayIndex: "+ArrayIndex);
+  Serial.println((String)"overflows: "+overflows);
+  Serial.print((String)"ConsumptionArray["+ArrayIndex+"]: ");
+  Serial.println(consumptionArray[ArrayIndex], 7);
+  Serial.println();
+  
   for (int i = 0; i != 4; ++i)
   {
-    Serial.println((String)"i="+i);
-    unsigned long val = ArrayView-i;
-    Serial.println((String)"val= "+val);
-    unsigned long ViewV = val-vl1;
-    Serial.println((String)"ViewV= "+ViewV);
-    Serial.println((String)"Overflows="+overflows);
+    int x = i-1;
+    unsigned long val = ArrayView-x;
 
     if (i == 0){
       lcd.setCursor(0, i);
       lcd.print((String)"Gesamt in l: "+usedsincestart);
-    } else{
+    } else{ 
+      
+      long ViewV = (ArrayView-vl1)-x;
+      //Serial.println((String)"ViewV: "+ViewV);
       lcd.setCursor(0, i);
-      lcd.print((String)val+".Minute: ");
-      //lcd.print((String)consumptionArray[ViewV]+"l/m");
+      lcd.print((String)val+".Min.: "+consumptionArray[ViewV]);
     }
   }
   downButton = false;
   upButton = false;
-}
-
-void debug()                                                    //Nur zu debugzwecken, kann komplett deaktiviert werden!
-{
-  Serial.print((String)"consumptionArray[ArrayIndex"+ArrayIndex+"]: ");
-  Serial.println(consumptionArray[ArrayIndex]);
-  Serial.println((String)"ArrayView: [ArrayView"+ArrayView+"]");
-  Serial.println();
 }
 
 void setup()                                                    //Initialisieren (nur beim Boot)
@@ -189,9 +166,9 @@ if (firstBoot){                                           //nur beim ersten Boot
   startupAnzeige();
 }
 
-if(vl2 >= 3 && vl2 <=1748){                                       //Wenn mehr als 4 Werte vorhanden sind, und kein Overflow stattgefunden hat
+if(ArrayView >= 3){                                       //Wenn mehr als 4 Werte vorhanden sind, und kein Overflow stattgefunden hat
   if(upButton == true || downButton == true) {
-    if (downButton == true && ArrayView < ArrayIndex ){
+    if (downButton == true && ArrayView < ArrayIndex+vl1 ){
       ArrayView++;
     }
     if (upButton == true && ArrayView >= 4){
@@ -199,24 +176,9 @@ if(vl2 >= 3 && vl2 <=1748){                                       //Wenn mehr al
 
     }
     anzeigen();
-    //debug();
   }
 }
 
-if(vl2 >1748){                                                         //Nach Overflow 
-  if(upButton == true || downButton == true) {
-    vl1 = overflows*1800;
-    vl2 = vl1+ArrayIndex;
-    if (downButton == true && ArrayView < vl2){
-      ArrayView++;
-    }
-    if (upButton == true && ArrayView >= 1799){
-      ArrayView--;
-
-    }
-    anzeigen();
-  }
-}
 
 if (millis() - lastTime >= delayTimeMeasurements){        //Schleife nach delayTimeMeasurements (60Sek) um zu rechnen und Anzeige zu aktualisieren
   if(firstLoop){
@@ -227,6 +189,5 @@ if (millis() - lastTime >= delayTimeMeasurements){        //Schleife nach delayT
   lastTime = millis();
   calculate(pulses1, pulses2);
   anzeigen();
-  debug();
   }
 }
