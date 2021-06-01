@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "ESP32-Cam-test",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"wifiscan.h": "c",
+			"wifitype.h": "c",
+			"wifigeneric.h": "c"
+		}
+	}
+}

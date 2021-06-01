@@ -19,7 +19,7 @@
 #define buttonDown 19
 #define inFlowSensor 2
 #define outFlowSensor 3
-#define delayTimeMeasurements 2000 //if changed, look for calculate() and change respectively! //ACHTUNG; ZURÜCKÄNDERN; WAR 60000!!!
+#define delayTimeMeasurements 60000 //if changed, look for calculate() and change respectively! //ACHTUNG; ZURÜCKÄNDERN; WAR 60000!!!
 float imppliter = 10500.00;
 
 volatile int pulses1 = 0;
