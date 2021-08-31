@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Signalgeber_Schiffahrt_Horn_2021",
+			"path": "."
+		},
+		{
+			"name": "Gyroskop-Test-Oled_Uno",
+			"path": "..\\Gyroskop-Test-Oled_Uno"
+		}
+	],
+	"settings": {}
+}

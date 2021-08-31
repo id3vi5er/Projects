@@ -1,30 +1,22 @@
 #include <Arduino.h>
+#include <Adafruit_NeoPixel.h>
+#include <avr/power.h>
 
-#define sensorPin 2
-#define potPin A5
+#define PIN            6
+#define NUMPIXELS      10
 
-long counter = 0;
-long previousMillis = 0;
-long interval = 1000;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-
-void tick() {
-  counter++;
-}
+int delayval = 500;
 
 void setup() {
-  Serial.begin(9600);
-  pinMode(sensorPin, INPUT_PULLUP);
-  pinMode(potPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(sensorPin), tick, FALLING);
+  pixels.begin();
 }
 
 void loop() {
-  int val = analogRead(sensorPin);
-
-  unsigned long currentMillis = millis();
-  if(currentMillis - previousMillis > interval) {
-    // save the last time you blinked the LED 
-    previousMillis = currentMillis;   
-  delay(100);
+  for(int i=0;i<NUMPIXELS;i++){
+    pixels.setPixelColor(i, pixels.Color(255,255,255)); // Moderately bright green color.
+    pixels.show(); // This sends the updated pixel color to the hardware.
+    delay(delayval); // Delay for a period of time (in milliseconds).
+  }
 }
