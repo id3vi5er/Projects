@@ -21,6 +21,8 @@ void setup() {
 void loop() {
   sensors.requestTemperatures();
   float temp = sensors.getTempCByIndex(0);
-  SerialBT.println(temp);
+  SerialBT.println((String)"t:"+temp);
+  // int touch = touchRead(13);
+  // SerialBT.println((String)"Wasser (<0!): "+touch);
   delay(500);
 }

@@ -1,8 +1,8 @@
 {
 	"folders": [
 		{
-			"name": "ESP32-Bluetooth-test",
-			"path": "."
+			"name": "ATtiny85_Streamdeck",
+			"path": "..\\ATtiny85_Streamdeck"
 		}
 	],
 	"settings": {}
