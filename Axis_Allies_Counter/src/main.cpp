@@ -23,7 +23,7 @@ String nameP4 = "Player 4";
 String nameP5 = "Player 5";
 String nameP6 = "Player 6";
 
-int startdelaytime = 200;
+int startdelaytime = 500;
 int buffering = 200;
 
 //Point Values
@@ -39,9 +39,9 @@ int pointsP6 = 0;
 LiquidCrystal_I2C lcd1(0x27, 16, 2);
 LiquidCrystal_I2C lcd2(0x26, 16, 2);
 LiquidCrystal_I2C lcd3(0x25, 16, 2);
-//LiquidCrystal_I2C lcd4(0x24, 16, 2); //Adresse prüfen!!!
-//LiquidCrystal_I2C lcd5(0x23, 16, 2);
-//LiquidCrystal_I2C lcd6(0x22, 16, 2);
+LiquidCrystal_I2C lcd4(0x24, 16, 2); //Adresse prüfen!!!
+LiquidCrystal_I2C lcd5(0x23, 16, 2);
+LiquidCrystal_I2C lcd6(0x22, 16, 2);
 
 byte Character[8] =
 { 0b01110,
@@ -54,30 +54,94 @@ byte Character[8] =
   0b10001
 };
 
+void refreshLCD() {
+  lcd1.clear();
+  lcd1.setCursor(4,0);
+  lcd1.print(nameP1);
+  lcd1.setCursor(7, 1);
+  lcd1.print(pointsP1);
+  
+  lcd2.clear();
+  lcd2.setCursor(4,0);
+  lcd2.print(nameP2);
+  lcd2.setCursor(7, 1);
+  lcd2.print(pointsP2);
+
+  lcd3.clear();
+  lcd3.setCursor(4,0);
+  lcd3.print(nameP3);
+  lcd3.setCursor(7, 1);
+  lcd3.print(pointsP3);
+
+  lcd4.clear();
+  lcd4.setCursor(4,0);
+  lcd4.print(nameP4);
+  lcd4.setCursor(7, 1);
+  lcd4.print(pointsP4);
+
+  lcd5.clear();
+  lcd5.setCursor(4,0);
+  lcd5.print(nameP5);
+  lcd5.setCursor(7, 1);
+  lcd5.print(pointsP5);
+
+  lcd6.clear();
+  lcd6.setCursor(4,0);
+  lcd6.print(nameP6);
+  lcd6.setCursor(7, 1);
+  lcd6.print(pointsP6);
+}
+
 void initLCD() {
   lcd1.init();
   lcd1.backlight();
+  lcd1.setCursor(0,0);
+  lcd1.printstr("Axis & Allies");
+  lcd1.setCursor(0, 1);
+  lcd1.printstr("Punktezaehler");
   delay(startdelaytime);
 
   lcd2.init();
   lcd2.backlight();
+  lcd2.setCursor(5,0);
+  lcd2.printstr("Software by");
+  lcd2.setCursor(0, 1);
+  lcd2.printstr("N. Rattensperger");
   delay(startdelaytime);
 
   lcd3.init();
   lcd3.backlight();
+  lcd3.setCursor(0,0);
+  lcd3.printstr("Befehle werden");
+  lcd3.setCursor(0, 1);
+  lcd3.printstr("erteilt...");
   delay(startdelaytime);
 
-  //lcd4.init();
-  //lcd4.backlight();
-  //delay(startdelaytime);
+  lcd4.init();
+  lcd4.backlight();
+  lcd4.setCursor(3, 0);
+  lcd4.printstr("Strategien");
+  lcd4.setCursor(0, 1);
+  lcd4.printstr("werden erstellt");
+  delay(startdelaytime);
 
-  //lcd5.init();
-  //lcd5.backlight();
-  //delay(startdelaytime);
+  lcd5.init();
+  lcd5.backlight();
+  lcd5.setCursor(4, 0);
+  lcd5.printstr("Motoren");
+  lcd5.setCursor(0, 1);
+  lcd5.printstr("werden gestartet");
+  delay(startdelaytime);
 
-  //lcd6.init();
-  //lcd6.backlight();
-  //delay(startdelaytime);
+  lcd6.init();
+  lcd6.backlight();
+  lcd6.setCursor(0, 0);
+  lcd6.printstr("Auf in die");
+  lcd6.setCursor(0, 1);
+  lcd6.printstr("Schlacht!");
+  delay(startdelaytime);
+  
+  refreshLCD();
 }
 
 void initPins() {
@@ -89,39 +153,6 @@ pinMode(p3, INPUT_PULLUP);
 pinMode(p4, INPUT_PULLUP);
 pinMode(p5, INPUT_PULLUP);
 pinMode(p6, INPUT_PULLUP);
-}
-
-void refreshLCD() {
-
-  lcd1.setCursor(4,0);
-  lcd1.print(nameP1);
-  lcd1.setCursor(7, 1);
-  lcd1.print(pointsP1);
-  
-  lcd2.setCursor(4,0);
-  lcd2.print(nameP2);
-  lcd2.setCursor(7, 1);
-  lcd2.print(pointsP2);
-
-  lcd3.setCursor(4,0);
-  lcd3.print(nameP3);
-  lcd3.setCursor(7, 1);
-  lcd3.print(pointsP3);
-
-  // lcd4.setCursor(4,0);
-  // lcd4.print(nameP4);
-  // lcd4.setCursor(7, 1);
-  // lcd4.print(pointsP4);
-
-  // lcd5.setCursor(4,0);
-  // lcd5.print(nameP5);
-  // lcd5.setCursor(7, 1);
-  // lcd5.print(pointsP5);
-
-  // lcd6.setCursor(4,0);
-  // lcd6.print(nameP6);
-  // lcd6.setCursor(7, 1);
-  // lcd6.print(pointsP6);
 }
 
 void debug() {
@@ -178,6 +209,7 @@ void loop() {
       pointsP6 = pointsP6+1;
       delay(buffering);
     }
+    refreshLCD();
   }
         // Taste Down
 
@@ -206,8 +238,8 @@ void loop() {
       pointsP6 = pointsP6-1;
       delay(buffering);
     }
+    refreshLCD();
   }
 
-  refreshLCD();
   //debug();
 }
